@@ -1,61 +1,100 @@
 import { Component } from 'react';
-import Contacts from './Contacts';
+import ContactList from './ContactList';
 import Notiflix from 'notiflix';
+import { nanoid } from 'nanoid';
+import ContactForm from './ContactForm';
+import Filter from './Filter';
 
 export class App extends Component {
   state = {
-    contacts: [],
+    contacts: [
+      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
+      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
+      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
+      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
+    ],
+    filter: '',
     name: '',
     number: '',
   };
+
+  getContactsNames = () => {
+    const namesArray = this.state.contacts.map(contact => contact.name);
+    return namesArray;
+  };
+
   handleAddContact = e => {
     e.preventDefault();
     let nameInput = e.target.form[0];
     let numberInput = e.target.form[1];
     if (!nameInput.value || !numberInput.value) {
-      Notiflix.Notify.warning('Ooops... Nothing here');
+      Notiflix.Notify.warning('Ooops... Something missed', {
+        position: 'center-top',
+        distance: '50px',
+        fontSize: '40px',
+        width: '600px',
+      });
       return;
     }
-    let prevContacts = this.state.contacts;
-    prevContacts.push(nameInput.value);
-    console.log(prevContacts);
-    let newContact = {
-      name: nameInput.value,
-      number: numberInput.value,
-    };
-    this.setState(prevState => {
+
+    if (this.getContactsNames().includes(nameInput.value)) {
+      Notiflix.Notify.warning(`${nameInput.value} is already in contacts`, {
+        position: 'center-top',
+        distance: '50px',
+        fontSize: '40px',
+        width: '600px',
+      });
+      return;
+    }
+
+    this.setState(prev => {
+      let newContact = [
+        ...prev.contacts,
+        { name: this.state.name, number: this.state.number, id: nanoid() },
+      ];
       return {
         contacts: newContact,
-        name: prevState.name,
       };
     });
     e.target.form.reset();
   };
-  /*OnChange для інпутів - записувати value у стейти
-   onClick для кнопки - записати об'єкт зі значеннями зі стейтів у стейт контакту
-   Валідація????*/
+
+  handleDelete = e => {
+    if (e.target.className === 'delete-btn') {
+      const contactIdToDelete = e.currentTarget.id;
+      this.setState(prev => ({
+        contacts: prev.contacts.filter(el => el.id !== contactIdToDelete),
+      }));
+    }
+  };
+
+  handleChange = ({ target: { name, value } }) => {
+    this.setState({ [name]: value });
+  };
+
+  getVisibleContacts = () => {
+    const normalizedFilter = this.state.filter.toLowerCase();
+    return this.state.contacts.filter(c =>
+      c.name.toLowerCase().includes(normalizedFilter)
+    );
+  };
+
   render() {
     return (
       <>
         <h1 className="title">Phonebook</h1>
-        <form action="submit" className="add-form">
-          <label htmlFor="name" className="add-label">
-            Name
-          </label>
-          <input type="text" name="name" required className="add-input" />
-          <label htmlFor="number" className="add-label">
-            Number
-          </label>
-          <input type="tel" name="number" required className="add-input" />
-          <button className="add-btn" onClick={this.handleAddContact}>
-            Add contact
-          </button>
-        </form>
+        <ContactForm
+          handleAddContact={this.handleAddContact}
+          handleChange={this.handleChange}
+        />
+
         <section className="contacts-wrapper">
           <h1 className="title">Contacts</h1>
-          <ul className="contacts-list">
-            <Contacts namesArray={this.state.contacts}></Contacts>
-          </ul>
+          <Filter handleChange={this.handleChange} />
+          <ContactList
+            contactsArray={this.getVisibleContacts()}
+            handleDelete={this.handleDelete}
+          />
         </section>
       </>
     );
