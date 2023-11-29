@@ -1,7 +1,5 @@
 import { Component } from 'react';
 import ContactList from './ContactList';
-import Notiflix from 'notiflix';
-import { nanoid } from 'nanoid';
 import ContactForm from './ContactForm';
 import Filter from './Filter';
 
@@ -14,53 +12,20 @@ export class App extends Component {
       { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
     ],
     filter: '',
-  getContactsNames = () => {
-    const namesArray = this.state.contacts.map(contact => contact.name);
-    return namesArray;
   };
 
-  handleAddContact = e => {
-    e.preventDefault();
-    let nameInput = e.target.form[0];
-    let numberInput = e.target.form[1];
-    if (!nameInput.value || !numberInput.value) {
-      Notiflix.Notify.warning('Ooops... Something missed', {
-        position: 'center-top',
-        distance: '50px',
-        fontSize: '40px',
-        width: '600px',
-      });
-      return;
-    }
-
-    if (this.getContactsNames().includes(nameInput.value)) {
-      Notiflix.Notify.warning(`${nameInput.value} is already in contacts`, {
-        position: 'center-top',
-        distance: '50px',
-        fontSize: '40px',
-        width: '600px',
-      });
-      return;
-    }
-
+  handleAddContact = obj => {
     this.setState(prev => {
       return {
-        contacts: [
-          ...prev.contacts,
-          { name: this.state.name, number: this.state.number, id: nanoid() },
-        ],
+        contacts: [...prev.contacts, obj],
       };
     });
-    e.target.form.reset();
   };
 
-  handleDelete = e => {
-    if (e.target.className === 'delete-btn') {
-      const contactIdToDelete = e.currentTarget.id;
-      this.setState(prev => ({
-        contacts: prev.contacts.filter(el => el.id !== contactIdToDelete),
-      }));
-    }
+  handleDelete = id => {
+    this.setState(prev => ({
+      contacts: prev.contacts.filter(el => el.id !== id),
+    }));
   };
 
   handleChange = ({ target: { name, value } }) => {
@@ -79,6 +44,7 @@ export class App extends Component {
       <>
         <h1 className="title">Phonebook</h1>
         <ContactForm
+          contacts={this.state.contacts}
           handleAddContact={this.handleAddContact}
           handleChange={this.handleChange}
         />
