@@ -14,10 +14,6 @@ export class App extends Component {
       { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
     ],
     filter: '',
-    name: '',
-    number: '',
-  };
-
   getContactsNames = () => {
     const namesArray = this.state.contacts.map(contact => contact.name);
     return namesArray;
@@ -48,12 +44,11 @@ export class App extends Component {
     }
 
     this.setState(prev => {
-      let newContact = [
-        ...prev.contacts,
-        { name: this.state.name, number: this.state.number, id: nanoid() },
-      ];
       return {
-        contacts: newContact,
+        contacts: [
+          ...prev.contacts,
+          { name: this.state.name, number: this.state.number, id: nanoid() },
+        ],
       };
     });
     e.target.form.reset();
