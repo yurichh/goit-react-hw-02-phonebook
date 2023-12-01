@@ -2,6 +2,7 @@ import { Component } from 'react';
 import ContactList from './ContactList';
 import ContactForm from './ContactForm';
 import Filter from './Filter';
+import Notiflix from 'notiflix';
 
 export class App extends Component {
   state = {
@@ -13,8 +14,36 @@ export class App extends Component {
     ],
     filter: '',
   };
+  componentDidMount() {
+    const localData = localStorage.getItem('contacts');
+    if (localData) this.setState({ contacts: JSON.parse(localData) });
+  }
+
+  componentDidUpdate(_, prevState) {
+    if (prevState.contacts) {
+      prevState.contacts.length !== this.state.contacts.length &&
+        localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
+    }
+  }
+
+  checkNameForRepeat = contactName => {
+    return this.state.contacts.some(
+      ({ name }) => name.toLowerCase() === contactName.toLowerCase()
+    );
+  };
 
   handleAddContact = obj => {
+    /*Перевірка чи існує контакт*/
+    if (this.checkNameForRepeat(obj.name)) {
+      Notiflix.Notify.warning(`${obj.name} is already in contacts`, {
+        position: 'center-top',
+        distance: '50px',
+        fontSize: '40px',
+        width: '600px',
+      });
+      return;
+    }
+
     this.setState(prev => {
       return {
         contacts: [...prev.contacts, obj],
